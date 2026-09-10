@@ -4,7 +4,7 @@ const myRecipesData = [
   {
     "分类": "海鲜",
     "菜名": "避风塘炒虾",
-    "图片": "https://unsplash.com",
+    "图片": "https://bkimg.cdn.bcebos.com/pic/3bf33a87e950352ac65c90ee9509ecf2b21192131d88?x-bce-process=image/format,f_auto/quality,Q_70/resize,m_lfit,limit_1,w_536",
     "所需食材": "大虾 500g, 面包糠 50g, 大蒜 1整头",
     "步骤": "1. 大虾腌制10分钟。| 2. 炸蒜末至金黄。| 3. 下面包糠大虾翻炒均匀。"
   },
