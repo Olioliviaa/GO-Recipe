@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Xin's 私房菜谱</title>
+    <style>
+        :root {
+            --bg-color: #faf7f2;
+            --card-bg: #ffffff;
+            --primary-color: #d97706;
+            --text-main: #451a03;
+            --text-muted: #78350f;
+            --border-color: #f3f4f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        /* 头部样式 */
+        header {
+            background-color: var(--card-bg);
+            padding: 20px 16px 10px 16px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* 状态提示 */
+        #loading-status {
+            text-align: center;
+            padding: 30px;
+            font-size: 0.95rem;
+            color: #71717a;
+        }
+
+        /* 手机端横向滑动分类导航 */
+        .category-nav {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            background-color: var(--card-bg);
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 61px;
+            z-index: 100;
+            scrollbar-width: none;
+        }
+
+        .category-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-btn {
+            padding: 6px 16px;
+            margin: 0 4px;
+            border-radius: 20px;
+            background-color: #f4f4f5;
+            color: #52525b;
+            font-size: 0.9rem;
+            border: none;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        /* 菜谱容器及卡片样式 */
+        .recipe-container {
+            padding: 16px;
+        }
+
+        .recipe-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+
+        .recipe-card.show {
+            display: block;
+        }
+
+        .recipe-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #e5e7eb;
+        }
+
+        .recipe-content {
+            padding: 16px;
+        }
+
+        .recipe-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 16px 0 8px 0;
+            padding-left: 8px;
+            border-left: 3px solid var(--primary-color);
+            color: var(--text-muted);
+        }
+
+        /* 食材列表（可打勾划掉） */
+        .ingredients-list {
+            list-style: none;
+            background: #fafafa;
+            padding: 12px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .ingredient-item {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            user-select: none;
+        }
+
+        .ingredient-item input {
+            margin-right: 6px;
+            accent-color: var(--primary-color);
+        }
+
+        .ingredient-item input:checked + span {
+            text-decoration: line-through;
+            color: #a1a1aa;
+        }
+
+        /* 步骤列表样式 */
+        .steps-list {
+            list-style: none;
+        }
+
+        .step-item {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 14px;
+            font-size: 0.95rem;
+        }
+
+        .step-number {
+            position: absolute;
+            left: 0;
+            top: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: #fef3c7;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* 厨房计时钟样式 */
+        .timer-badge {
+            background-color: #fef3c7;
+            color: var(--primary-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            margin-left: 4px;
+            border: 1px solid #fde68a;
+        }
+
+        .timer-badge.running {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Xin's 私房菜谱</h1>
+    </header>
+
+    <!-- 分类滑动导航栏 -->
+    <div class="category-nav">
+        <button class="category-btn active" onclick="filterCategory('全部')">全部</button>
+        <button class="category-btn" onclick="filterCategory('主食')">主食</button>
+        <button class="category-btn" onclick="filterCategory('肉类')">肉类</button>
+        <button class="category-btn" onclick="filterCategory('海鲜')">海鲜</button>
+        <button class="category-btn" onclick="filterCategory('蔬菜')">蔬菜</button>
+        <button class="category-btn" onclick="filterCategory('汤品')">汤品</button>
+        <button class="category-btn" onclick="filterCategory('甜品')">甜品</button>
+        <button class="category-btn" onclick="filterCategory('西式菜')">西式菜</button>
+        <button class="category-btn" onclick="filterCategory('烘焙')">烘焙</button>
+    </div>
+
+    <!-- 动态同步载入状态 -->
+    <div id="loading-status">🔄 正在同步您的私房菜谱...</div>
+    <div class="recipe-container" id="recipe-box"></div>
+
+    <script>
+        // 绑定您的 Google Sheets 数据请求接口地址
+        const SHEET_URL = 'https://google.com';
+        let currentActiveCategory = '全部';
+
+        // 页面初始化读取数据流程
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch(SHEET_URL)
+                .then(response => response.text())
+                .then(textData => {
+                    // 清理并提取 Google 封装的复杂格式，还原干净的原始 JSON
+                    const safeJsonString = textData.substring(47, textData.length - 2);
+                    const parsedData = JSON.parse(safeJsonString);
+                    const tableRows = parsedData.table.rows;
+                    
+                    // 调用核心渲染流程
+                    renderRecipes(tableRows);
+                    document.getElementById('loading-status').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error("同步过程中发生代码拦截或读取错误:", error);
+                    document.getElementById('loading-status').innerText = '❌ 同步失败，请尝试刷新。如果持续失败，请确认表格是否已进行 [文件 -> 分享 -> 发布到网络] 配置。';
+                });
+        });
+
+        // 核心渲染函数：完全展开，无错误简写
+        function renderRecipes(rows) {
+            const containerBox = document.getElementById('recipe-box');
+            containerBox.innerHTML = '';
+
+            rows.forEach(row => {
+                if (!row || !row.c) return;
+
+                // 安全读取单元格内容，防止因为某一行没填满导致的读取空崩溃
+                function getCellValue(index) {
+                    if (row.c[index] && row.c[index].v !== null && row.c[index].v !== undefined) {
+                        return row.c[index].v.toString().trim();
+                    }
+                    return '';
+                }
+
+                const categoryValue = getCellValue(0);
+                const titleValue = getCellValue(1);
+                const imageValue = getCellValue(2) || 'https://unsplash.com';
+                const ingredientsString = getCellValue(3);
+                const stepsString = getCellValue(4);
+
+                // 排除表格首行英文说明标题
+                if (categoryValue === 'category' || titleValue === 'title') return;
+                // 排除彻底没有填内容的整行空白行
+                if (categoryValue === '' && titleValue === '') return;
+
+                // 展开并切割食材和做菜步骤
+                const ingredientsArray = ingredientsString ? ingredientsString.split(',') : [];
+                const stepsArray = stepsString ? stepsString.split('|') : [];
+
+                // 拼装食材 HTML 结构
+                let ingredientsHTML = '';
+                ingredientsArray.forEach(item => {
+                    if (item.trim()) {
+                        ingredientsHTML += '<li class="ingredient-item"><label><input type="checkbox"><span>' + item.trim() + '</span></label></li>';
+                    }
+                });
+
+                // 拼装做菜步骤 HTML 结构，并高容错解析时间计时器
+                let stepHTML = '';
+                stepsArray.forEach((stepText, idx) => {
+                    if (stepText.trim()) {
+                        let processedText = stepText.trim();
+                        // 匹配步骤文字中包含的“XX分钟”或“XXmin”
+                        const timeMatch = processedText.match(/(\d+)\s*(?:分钟|min)/i);
+                        if (timeMatch && timeMatch[1]) {
+                            const minutesNumber = parseInt(timeMatch[1], 10);
+                            const originalMatchedText = timeMatch[0];
+// 安全替换，生成极具触感的橙色计时小勋章
+processedText = processedText.replace(originalMatchedText, '⏱️ ' + originalMatchedText + '');
+}
+stepHTML += '' + (idx + 1) + '' + processedText + '';
+}
+});
+// 将全套数据卡片组合并装填到容器盒子中
+const finalCardHTML = <div class="recipe-card show" data-category="${categoryValue}"> <img src="${imageValue}" alt="${titleValue}" class="recipe-img"> <div class="recipe-content"> <div class="recipe-title">${titleValue}</div> <div class="section-title">所需食材</div> <ul class="ingredients-list">${ingredientsHTML}</ul> <div class="section-title">做菜步骤</div> <ol class="steps-list">${stepHTML}</ol> </div> </div>;
+containerBox.innerHTML += finalCardHTML;
+});
+// 恢复并调用分类筛选器
+filterCategory(currentActiveCategory);
+}
+// 分类标签筛选及高亮状态控制函数
+function filterCategory(categoryName) {
+currentActiveCategory = categoryName;
+// 更新分类按钮的 Active 样式状态
+const allButtons = document.querySelectorAll('.category-btn');
+allButtons.forEach(btn => {
+if (btn.getAttribute('onclick').includes('${categoryName}')) {
+btn.classList.add('active');
+} else {
+btn.classList.remove('active');
+}
+});
+// 控制每个菜谱卡片的显隐
+const allCards = document.querySelectorAll('.recipe-card');
+allCards.forEach(card => {
+const cardCategory = card.getAttribute('data-category');
+if (categoryName === '全部' || cardCategory === categoryName) {
+card.style.display = 'block';
+} else {
+card.style.display = 'none';
+}
+});
+}
+// 厨房内置高颜值专注倒计时引擎
+function startTimer(badgeElement, totalMinutes) {
+if (badgeElement.classList.contains('running')) return;
+// 阻止冒泡，保障点击准确性
+if (window.event) window.event.stopPropagation();
+badgeElement.classList.add('running');
+let remainingSeconds = totalMinutes * 60;
+const fallbackText = badgeElement.innerHTML;
+const countdownInterval = setInterval(() => {
+if (remainingSeconds <= 0) {
+clearInterval(countdownInterval);
+badgeElement.innerText = "🔔 时间到！";
+badgeElement.classList.remove('running');
+// 3秒后恢复小勋章原本的提示状态
+setTimeout(() => {
+badgeElement.innerHTML = fallbackText;
+}, 3000);
+} else {
+const displayMinutes = Math.floor(remainingSeconds / 60);
+const displaySeconds = remainingSeconds % 60;
+badgeElement.innerText = ⏱️ ${displayMinutes}:${displaySeconds < 10 ? '0' : ''}${displaySeconds};
+remainingSeconds--;
+}
+}, 1000);
+}
+
+
+
