@@ -5,257 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Xin's 私房菜谱</title>
     <style>
-        :root {
-            --bg-color: #faf7f2;
-            --card-bg: #ffffff;
-            --primary-color: #d97706;
-            --text-main: #451a03;
-            --text-muted: #78350f;
-            --border-color: #f3f4f6;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.6;
-            padding-bottom: 40px;
-        }
-
-        header {
-            background-color: var(--card-bg);
-            padding: 20px 16px 10px 16px;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        header h1 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        #loading-status {
-            text-align: center;
-            padding: 30px;
-            font-size: 0.95rem;
-            color: #71717a;
-        }
-
-        /* 手机端丝滑横向滚动分类栏 */
-        .category-nav {
-            display: flex;
-            overflow-x: auto;
-            white-space: nowrap;
-            background-color: var(--card-bg);
-            padding: 10px 8px;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 61px;
-            z-index: 100;
-            scrollbar-width: none;
-        }
-
-        .category-nav::-webkit-scrollbar {
-            display: none;
-        }
-
-        .category-btn {
-            padding: 6px 16px;
-            margin: 0 4px;
-            border-radius: 20px;
-            background-color: #f4f4f5;
-            color: #52525b;
-            font-size: 0.9rem;
-            border: none;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .category-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: bold;
-        }
-
-        .recipe-container {
-            padding: 16px;
-        }
-
-        .recipe-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            display: none;
-        }
-
-        .recipe-card.show {
-            display: block;
-        }
-
-        .recipe-img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background-color: #e5e7eb;
-        }
-
-        .recipe-content {
-            padding: 16px;
-        }
-
-        .recipe-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .section-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin: 16px 0 8px 0;
-            padding-left: 8px;
-            border-left: 3px solid var(--primary-color);
-            color: var(--text-muted);
-        }
-
-        .ingredients-list {
-            list-style: none;
-            background: #fafafa;
-            padding: 12px;
-            border-radius: 8px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .ingredient-item {
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            user-select: none;
-        }
-
-        .ingredient-item input {
-            margin-right: 6px;
-            accent-color: var(--primary-color);
-        }
-
-        .ingredient-item input:checked + span {
-            text-decoration: line-through;
-            color: #a1a1aa;
-        }
-
-        .steps-list {
-            list-style: none;
-        }
-
-        .step-item {
-            position: relative;
-            padding-left: 28px;
-            margin-bottom: 14px;
-            font-size: 0.95rem;
-        }
-
-        .step-number {
-            position: absolute;
-            left: 0;
-            top: 2px;
-            width: 20px;
-            height: 20px;
-            background-color: #fef3c7;
-            color: var(--primary-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .timer-badge {
-            background-color: #fef3c7;
-            color: var(--primary-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            margin-left: 4px;
-            border: 1px solid #fde68a;
-        }
-
-        .timer-badge.running {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
+        :root { --bg: #faf7f2; --card: #fff; --prime: #d97706; --text: #451a03; --muted: #78350f; --line: #f3f4f6; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 40px; line-height: 1.6; }
+        header { background: var(--card); padding: 20px 16px 10px; text-align: center; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 100; }
+        header h1 { font-size: 1.4rem; font-weight: 600; }
+        #loading-status { text-align: center; padding: 30px; font-size: 0.95rem; color: #71717a; }
+        .category-nav { display: flex; overflow-x: auto; white-space: nowrap; background: var(--card); padding: 10px 8px; border-bottom: 1px solid var(--line); position: sticky; top: 61px; z-index: 100; scrollbar-width: none; }
+        .category-nav::-webkit-scrollbar { display: none; }
+        .category-btn { padding: 6px 16px; margin: 0 4px; border-radius: 20px; background: #f4f4f5; color: #52525b; font-size: 0.9rem; border: none; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
+        .category-btn.active { background: var(--prime); color: #fff; font-weight: bold; }
+        .recipe-container { padding: 16px; }
+        .recipe-card { background: var(--card); border-radius: 16px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: none; }
+        .recipe-card.show { display: block; }
+        .recipe-img { width: 100%; height: 200px; object-fit: cover; background: #e5e7eb; }
+        .recipe-content { padding: 16px; }
+        .recipe-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; }
+        .section-title { font-size: 1rem; font-weight: 600; margin: 16px 0 8px; padding-left: 8px; border-left: 3px solid var(--prime); color: var(--muted); }
+        .ingredients-list { list-style: none; background: #fafafa; padding: 12px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .ingredient-item { font-size: 0.9rem; display: flex; align-items: center; user-select: none; }
+        .ingredient-item input { margin-right: 6px; accent-color: var(--prime); }
+        .ingredient-item input:checked + span { text-decoration: line-through; color: #a1a1aa; }
+        .steps-list { list-style: none; }
+        .step-item { position: relative; padding-left: 28px; margin-bottom: 14px; font-size: 0.95rem; }
+        .step-number { position: absolute; left: 0; top: 2px; width: 20px; height: 20px; background: #fef3c7; color: var(--prime); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; }
+        .timer-badge { background: #fef3c7; color: var(--prime); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; margin-left: 4px; border: 1px solid #fde68a; }
+        .timer-badge.running { background: var(--prime); color: #fff; border-color: var(--prime); }
     </style>
 </head>
 <body>
-
-    <header>
-        <h1>Xin's 私房菜谱</h1>
-    </header>
-
-    <!-- 动态分类按钮容器 -->
+    <header><h1>Xin's 私房菜谱</h1></header>
     <div class="category-nav" id="category-nav-box">
         <button class="category-btn active" onclick="filterCategory('全部')">全部</button>
     </div>
-
     <div id="loading-status">🔄 正在同步您的私房菜谱...</div>
     <div class="recipe-container" id="recipe-box"></div>
-
     <script>
-        // 使用针对 pubhtml 转换优化的绝对开放 CSV 流链接
-        const GOOGLE_CSV_URL = 'https://google.com';
+        const GOOGLE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT-T62BmeOZz6yOHVrG_ueKzqXjl8N8dVjd42wtAYREfD1xY6Dp5PWyZ0bWY9AArLI_7CfW-7KEbsjp/pub?output=csv';
         let currentActiveCategory = '全部';
 
         document.addEventListener('DOMContentLoaded', () => {
             fetch(GOOGLE_CSV_URL)
-                .then(response => {
-                    if (!response.ok) throw new Error('网络请求未响应');
-                    return response.text();
-                })
+                .then(res => { if (!res.ok) throw new Error(); return res.text(); })
                 .then(csvText => {
                     const parsedRows = parseCSV(csvText);
-                    
-                    // 过滤掉表格头
-                    if (parsedRows.length > 0 && parsedRows[0][0] === 'category') {
-                        parsedRows.shift();
-                    }
-                    
-                    // 动态提取分类按钮
+                    if (parsedRows.length > 0 && parsedRows[0][0] === '分类') { parsedRows.shift(); }
                     generateDynamicMenu(parsedRows);
-                    
-                    // 渲染卡片
                     renderRecipes(parsedRows);
-                    
                     document.getElementById('loading-status').style.display = 'none';
                 })
-                .catch(error => {
-                    console.error("同步失败排查日志:", error);
-                    document.getElementById('loading-status').innerText = '❌ 同步超时，请尝试重新刷新页面。';
+                .catch(() => {
+                    document.getElementById('loading-status').innerText = '❌ 同步超时。请核对表格第一行是否为：分类、菜名、图片、所需食材、步骤。';
                 });
         });
 
-        // 强健的 CSV 解析引擎：无视隐藏双引号，完美兼容长句段落
         function parseCSV(text) {
             let lines = text.split(/\r?\n/);
             return lines.map(line => {
@@ -266,113 +69,87 @@
                     else if (char === ',' && !insideQuote) { row.push(entry.trim()); entry = ''; } 
                     else { entry += char; }
                 }
-                row.push(entry.trim());
-                return row;
+                row.push(entry.trim()); return row;
             }).filter(r => r.length > 0 && r.some(c => c !== ''));
         }
 
-        // 基于表格数据动态绘制菜单栏
         function generateDynamicMenu(rows) {
             const navBox = document.getElementById('category-nav-box');
             navBox.innerHTML = '<button class="category-btn active" onclick="filterCategory(\'全部\')">全部</button>';
-            
             const categorySet = new Set();
             rows.forEach(row => {
                 if (!row || row.length < 1) return;
                 const cat = row[0] ? row[0].replace(/^"/, '').replace(/"$/, '').replace(/""/g, '"').trim() : '';
-                if (cat && cat !== 'category') {
-                    categorySet.add(cat);
-                }
+                if (cat && cat !== '分类') { categorySet.add(cat); }
             });
-            
             categorySet.forEach(catName => {
                 navBox.innerHTML += `<button class="category-btn" onclick="filterCategory('${catName}')">${catName}</button>`;
             });
         }
 
         function renderRecipes(rows) {
-            const containerBox = document.getElementById('recipe-box');
-            containerBox.innerHTML = '';
-
+            const containerBox = document.getElementById('recipe-box'); containerBox.innerHTML = '';
             rows.forEach(row => {
-                // 安全阀门：如果这一行格子数不够，说明是残缺行，自动跳过防止崩溃
                 if (!row || row.length < 2) return;
-
-                const cleanValue = (val) => {
-                    if (!val) return '';
-                    return val.replace(/^"/, '').replace(/"$/, '').replace(/""/g, '"').trim();
-                };
-
-                const category = cleanValue(row[0]);
-                const title = cleanValue(row[1]);
+                const cleanValue = (val) => val ? val.replace(/^"/, '').replace(/"$/, '').replace(/""/g, '"').trim() : '';
+                const category = cleanValue(row[0]); const title = cleanValue(row[1]);
                 const image = cleanValue(row[2]) || 'https://unsplash.com';
-                const ingredientsStr = cleanValue(row[3]);
-                const stepsStr = cleanValue(row[4]);
+                const ingredientsStr = cleanValue(row[3]); const stepsStr = cleanValue(row[4]);
 
-                // 终极保护：如果分类和菜名都是空的，说明是空白废行，跳过
                 if (!category && !title) return;
-
                 const ingredientsArray = ingredientsStr ? ingredientsStr.split(',') : [];
                 const stepsArray = stepsStr ? stepsStr.split('|') : [];
 
                 let ingredientsHTML = '';
                 ingredientsArray.forEach(item => {
-                    if (item.trim()) {
-ingredientsHTML += <li class="ingredient-item"><label><input type="checkbox"><span>${item.trim()}</span></label></li>;
-}
-});
-let stepHTML = '';
-stepsArray.forEach((stepText, idx) => {
-if (stepText.trim()) {
-let text = stepText.trim();
-const minuteMatch = text.match(/(\d+)\s*(?:分钟|min)/i);
-if (minuteMatch) {
-const minutesInt = parseInt(minuteMatch[1], 10);
-const matchedKeyword = minuteMatch[0];
-text = text.replace(matchedKeyword, <span class="timer-badge" onclick="startTimer(this, ${minutesInt})">⏱️ ${matchedKeyword}</span>);
-}
-stepHTML += <li class="step-item"><span class="step-number">${idx + 1}</span>${text}</li>;
-}
-});
-containerBox.innerHTML += <div class="recipe-card show" data-category="${category || '其他'}"> <img src="${image}" class="recipe-img"> <div class="recipe-content"> <div class="recipe-title">${title || '未命名菜品'}</div> <div class="section-title">所需食材</div> <ul class="ingredients-list">${ingredientsHTML}</ul> <div class="section-title">做菜步骤</div> <ol class="steps-list">${stepHTML}</ol> </div> </div>;
-});
-filterCategory(currentActiveCategory);
-}
-function filterCategory(categoryName) {
-currentActiveCategory = categoryName;
-const allButtons = document.querySelectorAll('.category-btn');
-allButtons.forEach(btn => {
-btn.classList.toggle('active', btn.getAttribute('onclick').includes('${categoryName}'));
-});
-const allCards = document.querySelectorAll('.recipe-card');
-allCards.forEach(card => {
-const cardCategory = card.getAttribute('data-category');
-if (categoryName === '全部' || cardCategory === categoryName) {
-card.style.display = 'block';
-} else {
-card.style.display = 'none';
-}
-});
-}
-function startTimer(element, minutes) {
-if (element.classList.contains('running')) return;
-if (window.event) window.event.stopPropagation();
-element.classList.add('running');
-let totalSeconds = minutes * 60;
-const originalBadgeText = element.innerHTML;
-const timerInterval = setInterval(() => {
-if (totalSeconds <= 0) {
-clearInterval(timerInterval);
-element.innerText = "🔔 时间到！";
-element.classList.remove('running');
-setTimeout(() => { element.innerHTML = originalBadgeText; }, 3000);
-} else {
-let m = Math.floor(totalSeconds / 60);
-let s = totalSeconds % 60;
-element.innerText = ⏱️ ${m}:${s < 10 ? '0' : ''}${s};
-totalSeconds--;
-}
-}, 1000);
-}
+                    if (item.trim()) ingredientsHTML += `<li class="ingredient-item"><label><input type="checkbox"><span>${item.trim()}</span></label></li>`;
+                });
 
+                let stepHTML = '';
+                stepsArray.forEach((stepText, idx) => {
+                    if (stepText.trim()) {
+                        let text = stepText.trim(); const minuteMatch = text.match(/(\d+)\s*(?:分钟|min)/i);
+                        if (minuteMatch) {
+                            const minutesInt = parseInt(minuteMatch[1], 10); const matchedKeyword = minuteMatch[0];
+                            text = text.replace(matchedKeyword, `<span class="timer-badge" onclick="startTimer(this, ${minutesInt})">⏱️ ${matchedKeyword}</span>`);
+                        }
+                        stepHTML += `<li class="step-item"><span class="step-number">${idx + 1}</span>${text}</li>`;
+                    }
+                });
 
+                containerBox.innerHTML += `
+                    <div class="recipe-card show" data-category="${category || '其他'}">
+                        <img src="${image}" class="recipe-img">
+                        <div class="recipe-content">
+                            <div class="recipe-title">${title || '未命名菜品'}</div>
+                            <div class="section-title">所需食材</div>
+                            <ul class="ingredients-list">${ingredientsHTML}</ul>
+                            <div class="section-title">做菜步骤</div>
+                            <ol class="steps-list">${stepHTML}</ol>
+                        </div>
+                    </div>`;
+            });
+            filterCategory(currentActiveCategory);
+        }
+
+        function filterCategory(categoryName) {
+            currentActiveCategory = categoryName;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${categoryName}'`));
+            });
+            document.querySelectorAll('.recipe-card').forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                card.style.display = (categoryName === '全部' || cardCategory === categoryName) ? 'block' : 'none';
+            });
+        }
+
+        function startTimer(element, minutes) {
+            if (element.classList.contains('running')) return;
+            if (window.event) window.event.stopPropagation();
+            element.classList.add('running'); let totalSeconds = minutes * 60; const originalBadgeText = element.innerHTML;
+            const timerInterval = setInterval(() => {
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval); element.innerText = "🔔 时间到！"; element.classList.remove('running');
+                    setTimeout(() => { element.innerHTML = originalBadgeText; }, 3000);
+                } else {
+element.innerText = ⏱️ ${Math.floor(totalSeconds / 60)}:${totalSeconds % 60 < 10 ? '0' : ''}${totalSeconds % 60}; totalSeconds--;}}, 1000);}
