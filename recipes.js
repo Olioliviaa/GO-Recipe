@@ -11,7 +11,7 @@ const myRecipesData = [
   {
     "分类": "烘焙",
     "菜名": "布里欧修面包",
-    "图片": "https://unsplash.com",
+    "图片": "https://zh.wikipedia.org/wiki/File:Woda-6_ubt.jpeg",
     "所需食材": "高筋面粉 250g, 无盐黄油 120g",
     "步骤": "1. 揉出薄膜。| 2. 第一次发酵60分钟。| 3. 二发后180度烘烤25分钟。"
   }
