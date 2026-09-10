@@ -10,7 +10,6 @@
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 40px; line-height: 1.6; }
         header { background: var(--card); padding: 20px 16px 10px; text-align: center; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 100; }
         header h1 { font-size: 1.4rem; font-weight: 600; }
-        #loading-status { text-align: center; padding: 30px; font-size: 0.95rem; color: #71717a; }
         .category-nav { display: flex; overflow-x: auto; white-space: nowrap; background: var(--card); padding: 10px 8px; border-bottom: 1px solid var(--line); position: sticky; top: 61px; z-index: 100; scrollbar-width: none; }
         .category-nav::-webkit-scrollbar { display: none; }
         .category-btn { padding: 6px 16px; margin: 0 4px; border-radius: 20px; background: #f4f4f5; color: #52525b; font-size: 0.9rem; border: none; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
@@ -32,107 +31,84 @@
         .timer-badge { background: #fef3c7; color: var(--prime); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; margin-left: 4px; border: 1px solid #fde68a; }
         .timer-badge.running { background: var(--prime); color: #fff; border-color: var(--prime); }
     </style>
+    <!-- 🔒 核心安全策略：直接引入本地的 recipes.js 配置文件，彻底粉碎跨域拦截限制 -->
+    <script src="./recipes.js"></script>
 </head>
 <body>
     <header><h1>Xin's 私房菜谱</h1></header>
     <div class="category-nav" id="category-nav-box">
         <button class="category-btn active" onclick="filterCategory('全部')">全部</button>
     </div>
-    <div id="loading-status">🔄 正在同步您的私房菜谱...</div>
     <div class="recipe-container" id="recipe-box"></div>
     <script>
-        const GOOGLE_CSV_URL = 'https://google.com';
         let currentActiveCategory = '全部';
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetch(GOOGLE_CSV_URL)
-                .then(res => { if (!res.ok) throw new Error(); return res.text(); })
-                .then(csvText => {
-                    const parsedRows = parseCSV(csvText);
-                    if (parsedRows.length > 0 && (parsedRows[0] === '分类' || parsedRows[0] === 'category')) { parsedRows.shift(); }
-                    generateDynamicMenu(parsedRows);
-                    renderRecipes(parsedRows);
-                    document.getElementById('loading-status').style.display = 'none';
-                })
-                .catch(err => {
-                    console.error("加载全局捕获:", err);
-                    document.getElementById('loading-status').innerText = '⚠️ 数据接口加载超时，请检查网络或重新刷新。';
-                });
+            // 检测本地变量是否存在，给您最高等级的安全渲染保护
+            if (typeof myRecipesData !== 'undefined' && Array.isArray(myRecipesData)) {
+                generateDynamicMenu(myRecipesData);
+                renderRecipes(myRecipesData);
+            } else {
+                document.getElementById('recipe-box').innerHTML = '<div style="text-align:center;padding:30px;color:#71717a;">⚠️ 未检测到 recipes.js 配置文件，请确认该文件已创建并拼写正确。</div>';
+            }
         });
 
-        function parseCSV(text) {
-            let lines = text.split(/\r?\n/);
-            return lines.map(line => {
-                let row = []; let insideQuote = false; let entry = '';
-                for (let i = 0; i < line.length; i++) {
-                    let char = line[i];
-                    if (char === '"') { insideQuote = !insideQuote; } 
-                    else if (char === ',' && !insideQuote) { row.push(entry.trim()); entry = ''; } 
-                    else { entry += char; }
-                }
-                row.push(entry.trim()); return row;
-            }).filter(r => r.length > 0 && r.some(c => c !== ''));
-        }
-
-        function generateDynamicMenu(rows) {
+        function generateDynamicMenu(recipes) {
             const navBox = document.getElementById('category-nav-box');
             navBox.innerHTML = '<button class="category-btn active" onclick="filterCategory(\'全部\')">全部</button>';
             const categorySet = new Set();
-            rows.forEach(row => {
-                try {
-                    if (!row || row.length < 1) return;
-                    const cat = row[0] ? row[0].replace(/^"/, '').replace(/"$/, '').replace(/""/g, '"').trim() : '';
-                    if (cat && cat !== '分类' && cat !== 'category') { categorySet.add(cat); }
-                } catch(e) {}
+            recipes.forEach(item => {
+                const cat = item["分类"] ? item["分类"].toString().trim() : '';
+                if (cat) { categorySet.add(cat); }
             });
             categorySet.forEach(catName => {
                 navBox.innerHTML += `<button class="category-btn" onclick="filterCategory('${catName}')">${catName}</button>`;
             });
         }
 
-        function renderRecipes(rows) {
-            const containerBox = document.getElementById('recipe-box'); containerBox.innerHTML = '';
-            rows.forEach(row => {
-                try {
-                    if (!row || row.length < 2) return;
-                    const cleanValue = (val) => val ? val.replace(/^"/, '').replace(/"$/, '').replace(/""/g, '"').trim() : '';
-                    const category = cleanValue(row[0]); const title = cleanValue(row[1]);
-                    const image = cleanValue(row[2]) || 'https://unsplash.com';
-                    const ingredientsStr = cleanValue(row[3]); const stepsStr = cleanValue(row[4]);
+        function renderRecipes(recipes) {
+            const containerBox = document.getElementById('recipe-box'); 
+            containerBox.innerHTML = '';
+            recipes.forEach(recipe => {
+                const category = (recipe["分类"] || '其他').trim();
+                const title = (recipe["菜名"] || '未命名菜品').trim();
+                const image = recipe["图片"] || 'https://unsplash.com';
+                const ingredientsStr = recipe["所需食材"] || '';
+                const stepsStr = recipe["步骤"] || '';
 
-                    if (!category && !title) return;
-                    const ingredientsArray = ingredientsStr ? ingredientsStr.split(',') : [];
-                    const stepsArray = stepsStr ? stepsStr.split('|') : [];
+                const ingredientsArray = ingredientsStr ? ingredientsStr.split(',') : [];
+                const stepsArray = stepsStr ? stepsStr.split('|') : [];
 
-                    let ingredientsHTML = '';
-                    ingredientsArray.forEach(item => {
-                        if (item.trim()) ingredientsHTML += `<li class="ingredient-item"><label><input type="checkbox"><span>${item.trim()}</span></label></li>`;
-                    });
+                let ingredientsHTML = '';
+                ingredientsArray.forEach(item => {
+                    if (item.trim()) ingredientsHTML += `<li class="ingredient-item"><label><input type="checkbox"><span>${item.trim()}</span></label></li>`;
+                });
 
-                    let stepHTML = '';
-                    stepsArray.forEach((stepText, idx) => {
-                        if (stepText.trim()) {
-                            let text = stepText.trim(); const minuteMatch = text.match(/(\d+)\s*(?:分钟|min)/i);
-                            if (minuteMatch) {
-                                const minutesInt = parseInt(minuteMatch[1], 10); const matchedKeyword = minuteMatch[0];
-                                text = text.replace(matchedKeyword, `<span class="timer-badge" onclick="startTimer(this, ${minutesInt})">⏱️ ${matchedKeyword}</span>`);
-                            }
-                            stepHTML += `<li class="step-item"><span class="step-number">${idx + 1}</span>${text}</li>`;
+                let stepHTML = '';
+                stepsArray.forEach((stepText, idx) => {
+                    if (stepText.trim()) {
+                        let text = stepText.trim(); 
+                        const minuteMatch = text.match(/(\d+)\s*(?:分钟|min)/i);
+                        if (minuteMatch) {
+                            const minutesInt = parseInt(minuteMatch[10] || minuteMatch[1], 10); 
+                            const matchedKeyword = minuteMatch[0];
+                            text = text.replace(matchedKeyword, `<span class="timer-badge" onclick="startTimer(this, ${minutesInt})">⏱️ ${matchedKeyword}</span>`);
                         }
-                    });
+                        stepHTML += `<li class="step-item"><span class="step-number">${idx + 1}</span>${text}</li>`;
+                    }
+                });
 
-                    containerBox.innerHTML += `
-                        <div class="recipe-card show" data-category="${category || '其他'}">
-                            <img src="${image}" class="recipe-img">
-                            <div class="recipe-content">
-                                <div class="recipe-title">${title || '未命名菜品'}</div>
-                                <div class="section-title">所需食材</div>
-                                <ul class="ingredients-list">${ingredientsHTML}</ul>
-                                <div class="section-title">做菜步骤</div>
-                                <ol class="steps-list">${stepHTML}</ol>
-                            </div>
-                        </div>`;
-                } catch (rowError) { console.error("跳过单行渲染错误行:", rowError); }
+                containerBox.innerHTML += `
+                    <div class="recipe-card show" data-category="${category}">
+                        <img src="${image}" class="recipe-img">
+                        <div class="recipe-content">
+                            <div class="recipe-title">${title}</div>
+                            <div class="section-title">所需食材</div>
+                            <ul class="ingredients-list">${ingredientsHTML}</ul>
+                            <div class="section-title">做菜步骤</div>
+                            <ol class="steps-list">${stepHTML}</ol>
+                        </div>
+                    </div>`;
             });
             filterCategory(currentActiveCategory);
         }
@@ -151,13 +127,18 @@
         function startTimer(element, minutes) {
             if (element.classList.contains('running')) return;
             if (window.event) window.event.stopPropagation();
-            element.classList.add('running'); let totalSeconds = minutes * 60; const originalBadgeText = element.innerHTML;
-const timerInterval = setInterval(() => {
-if (totalSeconds <= 0) {
-clearInterval(timerInterval); element.innerText = "🔔 时间到！"; element.classList.remove('running');
-setTimeout(() => { element.innerHTML = originalBadgeText; }, 3000);
-} else {
-element.innerText = ⏱️ ${Math.floor(totalSeconds / 60)}:${totalSeconds % 60 < 10 ? '0' : ''}${totalSeconds % 60}; totalSeconds--;
-}
-}, 1000);
-}
+            element.classList.add('running'); 
+            let totalSeconds = minutes * 60; 
+            const originalBadgeText = element.innerHTML;
+            const timerInterval = setInterval(() => {
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval); element.innerText = "🔔 时间到！"; element.classList.remove('running');
+                    setTimeout(() => { element.innerHTML = originalBadgeText; }, 3000);
+                } else {
+                    element.innerText = `⏱️ ${Math.floor(totalSeconds / 60)}:${totalSeconds % 60 < 10 ? '0' : ''}${totalSeconds % 60}`; totalSeconds--;
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
