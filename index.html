@@ -1,8 +1,81 @@
+你的代码中确实存在**几个明显导致图片无法加载或渲染报错的问题**，并不是代码被系统限制了，而是逻辑和代码语法上有小 Bug。
+
+主要有以下 **3 个关键原因** 以及对应的修改建议：
+
+---
+
+### 原因 1：默认图片地址设置错误（最核心原因）
+
+在代码第 63 行：
+
+```javascript
+const image = recipe["图片"] || 'https://unsplash.com';
+
+```
+
+* **问题所在**：`[https://unsplash.com](https://unsplash.com)` 是一个**网页网址**，而不是一张**图片地址**。浏览器无法将网页当作图片渲染，因此当你的数据中没有填图片地址时，就会显示为碎图或加载失败。
+
+
+* **解决办法**：换成一个有效的占位图 URL（如 `[https://picsum.photos/400/300](https://picsum.photos/400/300)`），或者使用本地备用图/Base64 图片。
+
+---
+
+### 原因 2：正则表达式索引报错（会导致 JavaScript 中断执行）
+
+在代码第 79 行：
+
+```javascript
+const minutesInt = parseInt(minuteMatch[10] || minuteMatch[1], 10);
+
+```
+
+* **问题所在**：你的正则 `(/(\d+)\s*(?:分钟|min)/i)` 中只有一个捕获组，`minuteMatch` 数组最大索引只有 `1`。这里写了 `minuteMatch[10]`，属于明显的逻辑笔误，会导致代码运行报错，可能影响后续 JS 的执行。
+
+
+* **解决办法**：修改为：
+```javascript
+const minutesInt = parseInt(minuteMatch[1], 10);
+
+```
+
+
+
+---
+
+### 原因 3：防盗链或路径问题（`recipes.js` 数据层）
+
+如果你在 `recipes.js` 中填写的图片链接依然加载不出来，请检查以下两点：
+
+1. **图片防盗链限制**：如果你用的是小红书、微信公众号、百度等平台的图片链接，这些平台设置了防盗链，禁止在外部网页加载。
+* **解决办法**：在 HTML 的 `<head>` 标签内添加一行 **防盗链 meta 标签**：
+
+
+```html
+<meta name="referrer" content="no-referrer">
+
+```
+
+
+
+
+2. **本地路径错漏**：如果使用的是本地图片（如 `images/1.jpg`），请确认图片路径是否正确，且图片文件和 HTML 代码放在同一个根目录下。
+
+
+
+---
+
+### 🛠️ 修复后的完整 HTML 代码
+
+你可以直接复制下方修改后的代码替换你的 `index (2).html`：
+
+```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 1. 添加防盗链允许，解决大部分外链图片打不开的问题 -->
+    <meta name="referrer" content="no-referrer">
     <title>橄榄公主的私房菜谱</title>
     <style>
         :root { --bg: #faf7f2; --card: #fff; --prime: #d97706; --text: #451a03; --muted: #78350f; --line: #f3f4f6; }
@@ -31,7 +104,7 @@
         .timer-badge { background: #fef3c7; color: var(--prime); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; margin-left: 4px; border: 1px solid #fde68a; }
         .timer-badge.running { background: var(--prime); color: #fff; border-color: var(--prime); }
     </style>
-    <!-- 🔒 核心安全策略：直接引入本地的 recipes.js 配置文件，彻底粉碎跨域拦截限制 -->
+    <!-- 引入本地配置文件 -->
     <script src="./recipes.js"></script>
 </head>
 <body>
@@ -44,7 +117,6 @@
         let currentActiveCategory = '全部';
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 检测本地变量是否存在，给您最高等级的安全渲染保护
             if (typeof myRecipesData !== 'undefined' && Array.isArray(myRecipesData)) {
                 generateDynamicMenu(myRecipesData);
                 renderRecipes(myRecipesData);
@@ -72,7 +144,11 @@
             recipes.forEach(recipe => {
                 const category = (recipe["分类"] || '其他').trim();
                 const title = (recipe["菜名"] || '未命名菜品').trim();
-                const image = recipe["图片"] || 'https://unsplash.com';
+                
+                // 2. 修复默认图片：修改为有效的占位图，且添加加载失败捕获
+                const defaultImage = 'https://picsum.photos/400/300';
+                const image = recipe["图片"] ? recipe["图片"].trim() : defaultImage;
+
                 const ingredientsStr = recipe["所需食材"] || '';
                 const stepsStr = recipe["步骤"] || '';
 
@@ -90,7 +166,8 @@
                         let text = stepText.trim(); 
                         const minuteMatch = text.match(/(\d+)\s*(?:分钟|min)/i);
                         if (minuteMatch) {
-                            const minutesInt = parseInt(minuteMatch[10] || minuteMatch[1], 10); 
+                            // 3. 修复索引错误：minuteMatch[10] 错改为 minuteMatch[1]
+                            const minutesInt = parseInt(minuteMatch[1], 10); 
                             const matchedKeyword = minuteMatch[0];
                             text = text.replace(matchedKeyword, `<span class="timer-badge" onclick="startTimer(this, ${minutesInt})">⏱️ ${matchedKeyword}</span>`);
                         }
@@ -98,9 +175,10 @@
                     }
                 });
 
+                // 给 img 添加 onerror 监听，一旦图片破损自动替换为占位图
                 containerBox.innerHTML += `
                     <div class="recipe-card show" data-category="${category}">
-                        <img src="${image}" class="recipe-img">
+                        <img src="${image}" class="recipe-img" onerror="this.onerror=null;this.src='${defaultImage}';">
                         <div class="recipe-content">
                             <div class="recipe-title">${title}</div>
                             <div class="section-title">所需食材</div>
@@ -142,3 +220,5 @@
     </script>
 </body>
 </html>
+
+```
