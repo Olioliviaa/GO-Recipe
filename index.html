@@ -3,59 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 防盗链 meta 标签，避免第三方平台的图片链接加载失败 -->
+    <!-- 防盗链 meta 标签 -->
     <meta name="referrer" content="no-referrer">
     <title>橄榄公主的私房菜谱</title>
     <style>
-        :root { --bg: #faf7f2; --card: #fff; --prime: #d97706; --text: #451a03; --muted: #78350f; --line: #f3f4f6; }
+        :root { 
+            --bg: #faf7f2; 
+            --card: #ffffff; 
+            --prime: #d97706; 
+            --text: #451a03; 
+            --muted: #78350f; 
+            --line: #e5e7eb; 
+            --active-bg: #fef3c7;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 40px; line-height: 1.6; }
-        header { background: var(--card); padding: 20px 16px 10px; text-align: center; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 100; }
-        header h1 { font-size: 1.4rem; font-weight: 600; }
-        .category-nav { display: flex; overflow-x: auto; white-space: nowrap; background: var(--card); padding: 10px 8px; border-bottom: 1px solid var(--line); position: sticky; top: 61px; z-index: 100; scrollbar-width: none; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* 1. 顶部 Header & 分类导航 */
+        header { background: var(--card); padding: 12px 16px 8px; text-align: center; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+        header h1 { font-size: 1.3rem; font-weight: 600; }
+        
+        .category-nav { display: flex; overflow-x: auto; white-space: nowrap; background: var(--card); padding: 8px 12px; border-bottom: 1px solid var(--line); flex-shrink: 0; scrollbar-width: none; }
         .category-nav::-webkit-scrollbar { display: none; }
-        .category-btn { padding: 6px 16px; margin: 0 4px; border-radius: 20px; background: #f4f4f5; color: #52525b; font-size: 0.9rem; border: none; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
+        .category-btn { padding: 5px 14px; margin-right: 8px; border-radius: 20px; background: #f4f4f5; color: #52525b; font-size: 0.85rem; border: none; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
         .category-btn.active { background: var(--prime); color: #fff; font-weight: bold; }
-        .recipe-container { padding: 16px; }
-        .recipe-card { background: var(--card); border-radius: 16px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: none; }
-        .recipe-card.show { display: block; }
-        /* 默认隐藏没有 src 或设置了 hidden 的图片 */
+
+        /* 2. 主体左右双栏布局容器 */
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+
+        /* 左侧菜名列表栏 */
+        .sidebar { width: 140px; background: #fff; border-right: 1px solid var(--line); overflow-y: auto; flex-shrink: 0; }
+        .recipe-item-btn { padding: 14px 12px; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; color: #374151; cursor: pointer; transition: all 0.2s; word-break: break-all; }
+        .recipe-item-btn:hover { background-color: #fafafa; }
+        .recipe-item-btn.active { background-color: var(--active-bg); color: var(--prime); font-weight: bold; border-left: 4px solid var(--prime); }
+
+        /* 右侧菜谱详情展示栏 */
+        .content-area { flex: 1; padding: 16px; overflow-y: auto; background: var(--bg); }
+        .recipe-card { background: var(--card); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        
+        /* 图片展示逻辑：无图自动隐藏 */
         .recipe-img { width: 100%; height: 200px; object-fit: cover; background: #e5e7eb; display: block; }
         .recipe-img[hidden] { display: none; }
+
         .recipe-content { padding: 16px; }
-        .recipe-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; }
-        .section-title { font-size: 1rem; font-weight: 600; margin: 16px 0 8px; padding-left: 8px; border-left: 3px solid var(--prime); color: var(--muted); }
-        .ingredients-list { list-style: none; background: #fafafa; padding: 12px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .recipe-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+        .section-title { font-size: 0.95rem; font-weight: 600; margin: 16px 0 8px; padding-left: 8px; border-left: 3px solid var(--prime); color: var(--muted); }
+        
+        .ingredients-list { list-style: none; background: #fafafa; padding: 12px; border-radius: 8px; display: grid; grid-template-columns: 1fr; gap: 8px; }
+        @media (min-width: 600px) { .ingredients-list { grid-template-columns: 1fr 1fr; } }
+        
         .ingredient-item { font-size: 0.9rem; display: flex; align-items: center; user-select: none; }
         .ingredient-item input { margin-right: 6px; accent-color: var(--prime); }
         .ingredient-item input:checked + span { text-decoration: line-through; color: #a1a1aa; }
+        
         .steps-list { list-style: none; }
         .step-item { position: relative; padding-left: 28px; margin-bottom: 14px; font-size: 0.95rem; }
         .step-number { position: absolute; left: 0; top: 2px; width: 20px; height: 20px; background: #fef3c7; color: var(--prime); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; }
+        
         .timer-badge { background: #fef3c7; color: var(--prime); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; margin-left: 4px; border: 1px solid #fde68a; }
         .timer-badge.running { background: var(--prime); color: #fff; border-color: var(--prime); }
+        
+        .empty-tip { text-align: center; padding: 40px 16px; color: #9ca3af; font-size: 0.95rem; }
     </style>
-    <!-- 🔒 核心安全策略：引入本地 recipes.js -->
+    <!-- 引入本地配置文件 -->
     <script src="./recipes.js"></script>
 </head>
 <body>
     <header><h1>橄榄公主的私房菜谱</h1></header>
+    
+    <!-- 1. 顶部分类导航栏 -->
     <div class="category-nav" id="category-nav-box">
         <button class="category-btn active" onclick="filterCategory('全部')">全部</button>
     </div>
-    <div class="recipe-container" id="recipe-box"></div>
+
+    <!-- 2. 主体左右栏容器 -->
+    <div class="main-container">
+        <!-- 左侧菜名列表 -->
+        <div class="sidebar" id="sidebar-list"></div>
+
+        <!-- 右侧菜谱详情区域 -->
+        <div class="content-area" id="detail-box"></div>
+    </div>
+
     <script>
         let currentActiveCategory = '全部';
+        let currentFilteredRecipes = [];
+        let selectedIndex = 0; // 当前选中的菜品索引
 
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof myRecipesData !== 'undefined' && Array.isArray(myRecipesData)) {
                 generateDynamicMenu(myRecipesData);
-                renderRecipes(myRecipesData);
+                filterCategory('全部');
             } else {
-                document.getElementById('recipe-box').innerHTML = '<div style="text-align:center;padding:30px;color:#71717a;">⚠️ 未检测到 recipes.js 配置文件，请确认该文件已创建并拼写正确。</div>';
+                document.getElementById('detail-box').innerHTML = '<div class="empty-tip">⚠️ 未检测到 recipes.js 配置文件，请确认该文件已创建。</div>';
             }
         });
 
+        // 生成顶部分类菜单
         function generateDynamicMenu(recipes) {
             const navBox = document.getElementById('category-nav-box');
             navBox.innerHTML = '<button class="category-btn active" onclick="filterCategory(\'全部\')">全部</button>';
@@ -69,73 +113,115 @@
             });
         }
 
-        function renderRecipes(recipes) {
-            const containerBox = document.getElementById('recipe-box'); 
-            containerBox.innerHTML = '';
-            recipes.forEach(recipe => {
-                const category = (recipe["分类"] || '其他').trim();
-                const title = (recipe["菜名"] || '未命名菜品').trim();
-                
-                // 1. 判断是否有图片：有值则读取，没有值则留空
-                const imageUrl = recipe["图片"] ? recipe["图片"].trim() : '';
-
-                const ingredientsStr = recipe["所需食材"] || '';
-                const stepsStr = recipe["步骤"] || '';
-
-                const ingredientsArray = ingredientsStr ? ingredientsStr.split(',') : [];
-                const stepsArray = stepsStr ? stepsStr.split('|') : [];
-
-                let ingredientsHTML = '';
-                ingredientsArray.forEach(item => {
-                    if (item.trim()) ingredientsHTML += `<li class="ingredient-item"><label><input type="checkbox"><span>${item.trim()}</span></label></li>`;
-                });
-
-                let stepHTML = '';
-                stepsArray.forEach((stepText, idx) => {
-                    if (stepText.trim()) {
-                        let text = stepText.trim(); 
-                        const minuteMatch = text.match(/(\d+)\s*(?:分钟|min)/i);
-                        if (minuteMatch) {
-                            const minutesInt = parseInt(minuteMatch[1], 10); 
-                            const matchedKeyword = minuteMatch[0];
-                            text = text.replace(matchedKeyword, `<span class="timer-badge" onclick="startTimer(this, ${minutesInt})">⏱️ ${matchedKeyword}</span>`);
-                        }
-                        stepHTML += `<li class="step-item"><span class="step-number">${idx + 1}</span>${text}</li>`;
-                    }
-                });
-
-                // 2. 根据是否有 imageUrl 来决定是否渲染 img 标签
-                // 如果图片地址打不开 (onerror)，自动隐藏图片框，避免页面留空框
-                const imageHTML = imageUrl 
-                    ? `<img src="${imageUrl}" class="recipe-img" onerror="this.style.display='none';">` 
-                    : '';
-
-                containerBox.innerHTML += `
-                    <div class="recipe-card show" data-category="${category}">
-                        ${imageHTML}
-                        <div class="recipe-content">
-                            <div class="recipe-title">${title}</div>
-                            <div class="section-title">所需食材</div>
-                            <ul class="ingredients-list">${ingredientsHTML}</ul>
-                            <div class="section-title">做菜步骤</div>
-                            <ol class="steps-list">${stepHTML}</ol>
-                        </div>
-                    </div>`;
-            });
-            filterCategory(currentActiveCategory);
-        }
-
+        // 筛选分类并更新左侧菜名列表
         function filterCategory(categoryName) {
             currentActiveCategory = categoryName;
+
+            // 更新顶部分类按钮状态
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${categoryName}'`));
             });
-            document.querySelectorAll('.recipe-card').forEach(card => {
-                const cardCategory = card.getAttribute('data-category');
-                card.style.display = (categoryName === '全部' || cardCategory === categoryName) ? 'block' : 'none';
+
+            // 过滤当前分类下的菜谱数据
+            if (categoryName === '全部') {
+                currentFilteredRecipes = myRecipesData;
+            } else {
+                currentFilteredRecipes = myRecipesData.filter(recipe => {
+                    const cat = (recipe["分类"] || '其他').trim();
+                    return cat === categoryName;
+                });
+            }
+
+            // 渲染左侧菜名列表
+            renderSidebar();
+
+            // 默认选中并展示第 1 项菜谱（如果有的话）
+            if (currentFilteredRecipes.length > 0) {
+                selectRecipe(0);
+            } else {
+                document.getElementById('detail-box').innerHTML = '<div class="empty-tip">暂无相关菜品</div>';
+            }
+        }
+
+        // 渲染左侧菜名列表
+        function renderSidebar() {
+            const sidebar = document.getElementById('sidebar-list');
+            sidebar.innerHTML = '';
+
+            currentFilteredRecipes.forEach((recipe, index) => {
+                const title = (recipe["菜名"] || '未命名菜品').trim();
+                const btn = document.createElement('div');
+                btn.className = `recipe-item-btn ${index === selectedIndex ? 'active' : ''}`;
+                btn.innerText = title;
+                btn.onclick = () => selectRecipe(index);
+                sidebar.appendChild(btn);
             });
         }
 
+        // 点击切换右侧菜谱详情
+        function selectRecipe(index) {
+            selectedIndex = index;
+
+            // 更新左侧高亮样式
+            const buttons = document.querySelectorAll('.recipe-item-btn');
+            buttons.forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === index);
+            });
+
+            // 渲染右侧菜谱详情
+            const recipe = currentFilteredRecipes[index];
+            if (!recipe) return;
+
+            const title = (recipe["菜名"] || '未命名菜品').trim();
+            const imageUrl = recipe["图片"] ? recipe["图片"].trim() : '';
+            const ingredientsStr = recipe["所需食材"] || '';
+            const stepsStr = recipe["步骤"] || '';
+
+            const ingredientsArray = ingredientsStr ? ingredientsStr.split(',') : [];
+            const stepsArray = stepsStr ? stepsStr.split('|') : [];
+
+            let ingredientsHTML = '';
+            ingredientsArray.forEach(item => {
+                if (item.trim()) ingredientsHTML += `<li class="ingredient-item"><label><input type="checkbox"><span>${item.trim()}</span></label></li>`;
+            });
+
+            let stepHTML = '';
+            stepsArray.forEach((stepText, idx) => {
+                if (stepText.trim()) {
+                    let text = stepText.trim(); 
+                    const minuteMatch = text.match(/(\d+)\s*(?:分钟|min)/i);
+                    if (minuteMatch) {
+                        const minutesInt = parseInt(minuteMatch[1], 10); 
+                        const matchedKeyword = minuteMatch[0];
+                        text = text.replace(matchedKeyword, `<span class="timer-badge" onclick="startTimer(this, ${minutesInt})">⏱️ ${matchedKeyword}</span>`);
+                    }
+                    stepHTML += `<li class="step-item"><span class="step-number">${idx + 1}</span>${text}</li>`;
+                }
+            });
+
+            // 如果有图片地址，则渲染 <img>，图片失败或无图则隐藏
+            const imageHTML = imageUrl 
+                ? `<img src="${imageUrl}" class="recipe-img" onerror="this.style.display='none';">` 
+                : '';
+
+            const detailBox = document.getElementById('detail-box');
+            detailBox.innerHTML = `
+                <div class="recipe-card">
+                    ${imageHTML}
+                    <div class="recipe-content">
+                        <div class="recipe-title">${title}</div>
+                        <div class="section-title">所需食材</div>
+                        <ul class="ingredients-list">${ingredientsHTML || '<li>无</li>'}</ul>
+                        <div class="section-title">做菜步骤</div>
+                        <ol class="steps-list">${stepHTML || '<li>无</li>'}</ol>
+                    </div>
+                </div>`;
+            
+            // 每次切换菜谱后将右侧滚动条置顶
+            detailBox.scrollTop = 0;
+        }
+
+        // 计时器功能
         function startTimer(element, minutes) {
             if (element.classList.contains('running')) return;
             if (window.event) window.event.stopPropagation();
