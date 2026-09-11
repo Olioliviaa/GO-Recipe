@@ -14,7 +14,7 @@ const myRecipesData = [
     "图片": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/Male_gorilla_in_SF_zoo.jpg/960px-Male_gorilla_in_SF_zoo.jpg?utm_source=zh-yue.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
     "所需食材": "高筋面粉 250g, 无盐黄油 120g",
     "步骤": "1. 揉出薄膜。| 2. 第一次发酵60分钟。| 3. 二发后180度烘烤25分钟。"
-  }
+  },
     {
     "分类": "火锅",
     "菜名": "椰子鸡火锅",
