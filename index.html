@@ -31,14 +31,38 @@
         /* 2. 主体左右双栏布局容器 */
         .main-container { display: flex; flex: 1; overflow: hidden; }
 
-        /* 左侧菜名列表栏 */
-        .sidebar { width: 140px; background: #fff; border-right: 1px solid var(--line); overflow-y: auto; flex-shrink: 0; }
-        .recipe-item-btn { padding: 14px 12px; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; color: #374151; cursor: pointer; transition: all 0.2s; word-break: break-all; }
-        .recipe-item-btn:hover { background-color: #fafafa; }
-        .recipe-item-btn.active { background-color: var(--active-bg); color: var(--prime); font-weight: bold; border-left: 4px solid var(--prime); }
+        /* 左侧菜名列表栏（调整宽度为 105px，让出更多空间给右侧） */
+        .sidebar { 
+            width: 105px; 
+            background: #fff; 
+            border-right: 1px solid var(--line); 
+            overflow-y: auto; 
+            flex-shrink: 0; 
+            scrollbar-width: none; 
+        }
+        .sidebar::-webkit-scrollbar { display: none; }
 
-        /* 右侧菜谱详情展示栏 */
-        .content-area { flex: 1; padding: 16px; overflow-y: auto; background: var(--bg); }
+        .recipe-item-btn { 
+            padding: 12px 8px; 
+            border-bottom: 1px solid #f3f4f6; 
+            font-size: 0.85rem; 
+            color: #374151; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            word-break: break-all; 
+            text-align: center;
+            line-height: 1.3;
+        }
+        .recipe-item-btn:hover { background-color: #fafafa; }
+        .recipe-item-btn.active { 
+            background-color: var(--active-bg); 
+            color: var(--prime); 
+            font-weight: bold; 
+            border-left: 3px solid var(--prime); 
+        }
+
+        /* 右侧菜谱详情展示栏（主要版面） */
+        .content-area { flex: 1; padding: 14px; overflow-y: auto; background: var(--bg); }
         .recipe-card { background: var(--card); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         
         /* 图片展示逻辑：无图自动隐藏 */
