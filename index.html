@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 1. 添加防盗链允许，解决大部分外链图片打不开的问题 -->
+    <!-- 防盗链 meta 标签，避免第三方平台的图片链接加载失败 -->
     <meta name="referrer" content="no-referrer">
     <title>橄榄公主的私房菜谱</title>
     <style>
@@ -19,7 +19,9 @@
         .recipe-container { padding: 16px; }
         .recipe-card { background: var(--card); border-radius: 16px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: none; }
         .recipe-card.show { display: block; }
-        .recipe-img { width: 100%; height: 200px; object-fit: cover; background: #e5e7eb; }
+        /* 默认隐藏没有 src 或设置了 hidden 的图片 */
+        .recipe-img { width: 100%; height: 200px; object-fit: cover; background: #e5e7eb; display: block; }
+        .recipe-img[hidden] { display: none; }
         .recipe-content { padding: 16px; }
         .recipe-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; }
         .section-title { font-size: 1rem; font-weight: 600; margin: 16px 0 8px; padding-left: 8px; border-left: 3px solid var(--prime); color: var(--muted); }
@@ -33,7 +35,7 @@
         .timer-badge { background: #fef3c7; color: var(--prime); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; margin-left: 4px; border: 1px solid #fde68a; }
         .timer-badge.running { background: var(--prime); color: #fff; border-color: var(--prime); }
     </style>
-    <!-- 引入本地配置文件 -->
+    <!-- 🔒 核心安全策略：引入本地 recipes.js -->
     <script src="./recipes.js"></script>
 </head>
 <body>
@@ -74,9 +76,8 @@
                 const category = (recipe["分类"] || '其他').trim();
                 const title = (recipe["菜名"] || '未命名菜品').trim();
                 
-                // 2. 修复默认图片：修改为有效的占位图，且添加加载失败捕获
-                const defaultImage = 'https://picsum.photos/400/300';
-                const image = recipe["图片"] ? recipe["图片"].trim() : defaultImage;
+                // 1. 判断是否有图片：有值则读取，没有值则留空
+                const imageUrl = recipe["图片"] ? recipe["图片"].trim() : '';
 
                 const ingredientsStr = recipe["所需食材"] || '';
                 const stepsStr = recipe["步骤"] || '';
@@ -95,7 +96,6 @@
                         let text = stepText.trim(); 
                         const minuteMatch = text.match(/(\d+)\s*(?:分钟|min)/i);
                         if (minuteMatch) {
-                            // 3. 修复索引错误：minuteMatch[10] 错改为 minuteMatch[1]
                             const minutesInt = parseInt(minuteMatch[1], 10); 
                             const matchedKeyword = minuteMatch[0];
                             text = text.replace(matchedKeyword, `<span class="timer-badge" onclick="startTimer(this, ${minutesInt})">⏱️ ${matchedKeyword}</span>`);
@@ -104,10 +104,15 @@
                     }
                 });
 
-                // 给 img 添加 onerror 监听，一旦图片破损自动替换为占位图
+                // 2. 根据是否有 imageUrl 来决定是否渲染 img 标签
+                // 如果图片地址打不开 (onerror)，自动隐藏图片框，避免页面留空框
+                const imageHTML = imageUrl 
+                    ? `<img src="${imageUrl}" class="recipe-img" onerror="this.style.display='none';">` 
+                    : '';
+
                 containerBox.innerHTML += `
                     <div class="recipe-card show" data-category="${category}">
-                        <img src="${image}" class="recipe-img" onerror="this.onerror=null;this.src='${defaultImage}';">
+                        ${imageHTML}
                         <div class="recipe-content">
                             <div class="recipe-title">${title}</div>
                             <div class="section-title">所需食材</div>
