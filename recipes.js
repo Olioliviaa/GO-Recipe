@@ -4,7 +4,7 @@ const myRecipesData = [
   {
     "分类": "肉类",
     "菜名": "牛肉丸",
-    "图片": "https://bkimg.cdn.bcebos.com/pic/6f061d950a7b02087bf4a1a23c92e5d3572c11df6216?x-bce-process=image/format,f_auto/quality,Q_70/resize,m_lfit,limit_1,w_536",
+    "图片": "https://i2.chuimg.com/87897a0b62fd43dc94462ec402e53ba4_1824w_856h.jpg?imageView2/1/w/640/h/520/q/75/format/jpg",
     "所需食材": "90%牛肉末 500g, 木薯淀粉Tapioca 15g, 小苏打 1g, 泡打粉 1g, 冰块 150g, 盐 10g, 糖 4g, 调味料",
     "步骤": "将肉和冰块放入绞肉机里搅打| 加粉类继续搅打，过热就放入冰块或放入冰箱冷却| 调味后用筷子搅拌| 用勺子给牛肉丸塑形，放入水中能浮起来| 开火煮熟后捞出"
   },
